@@ -34,6 +34,7 @@ from tensorflow.python.layers import core as layers_core
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import variables
@@ -280,6 +281,17 @@ class AttentionWrapperTest(test.TestCase):
             # outputs are batch major but the stacked TensorArray is time major
             expected_final_alignment_history,
             final_alignment_history_info)
+
+  def testBaseAttentionMechanismInit(self):
+    """ Verifies that a `_BaseAttentionMechanism` cannot be created with both
+        the query and memory layers unspecified.
+    """
+    prob_fn = lambda score, _: nn_ops.softmax(score)
+    attention_mechanism = wrapper._BaseAttentionMechanism(
+        query_layer=None,
+        memory_layer=None,
+        memory=memory,
+        probability_fn=prob_fn)
 
   def testBahdanauNormalizedDType(self):
     for dtype in [np.float16, np.float32, np.float64]:

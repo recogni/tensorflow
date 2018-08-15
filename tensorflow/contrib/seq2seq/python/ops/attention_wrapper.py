@@ -185,6 +185,9 @@ class _BaseAttentionMechanism(AttentionMechanism):
         `memory_sequence_length` is not None.
       name: Name to use when creating ops.
     """
+    # if (query_layer is None and memory_layer is None):
+    #   raise TypeError(
+    #     "either \"query_layer\" or \"memory_layer\" should be specified")
     if (query_layer is not None
         and not isinstance(query_layer, layers_base.Layer)):
       raise TypeError(
@@ -195,13 +198,13 @@ class _BaseAttentionMechanism(AttentionMechanism):
           "memory_layer is not a Layer: %s" % type(memory_layer).__name__)
     self._query_layer = query_layer
     self._memory_layer = memory_layer
-    self.dtype = memory_layer.dtype
+    self.dtype = memory_layer.dtype # if memory_layer else query_layer.dtype
     if not callable(probability_fn):
       raise TypeError("probability_fn must be callable, saw type: %s" %
                       type(probability_fn).__name__)
     if score_mask_value is None:
-      score_mask_value = dtypes.as_dtype(
-          self._memory_layer.dtype).as_numpy_dtype(-np.inf)
+      score_mask_value = dtypes.as_dtype(memory_layer.dtype).as_numpy_dtype(-np.inf)
+      # score_mask_value = dtypes.as_dtype(self.dtype).as_numpy_dtype(-np.inf)
     self._probability_fn = lambda score, prev: (  # pylint:disable=g-long-lambda
         probability_fn(
             _maybe_mask_score(score, memory_sequence_length, score_mask_value),
